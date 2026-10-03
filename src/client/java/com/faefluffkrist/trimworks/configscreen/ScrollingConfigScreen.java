@@ -34,6 +34,12 @@ abstract class ScrollingConfigScreen extends Screen {
         next=Math.max(0,Math.min(max,next));
         if(next!=scrollRow){beforeScroll();scrollRow=next;rebuildWidgets();}
     }
+    @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        net.minecraft.client.gui.screens.Screen.extractMenuBackgroundTexture(graphics,
+                net.minecraft.resources.Identifier.withDefaultNamespace("textures/block/cobbled_deepslate.png"),
+                0, 0, 0, 0, width, height);
+        graphics.fill(0, 0, width, height, 0x99000000);
+    }
     @Override public boolean mouseScrolled(double mx,double my,double horizontal,double vertical) {
         if(my>=listTop&&my<=listBottom&&vertical!=0&&totalRows>visibleRows){
             beforeScroll();int old=scrollRow;

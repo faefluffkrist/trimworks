@@ -23,6 +23,12 @@ class BonusCategoryScreen extends Screen {
     private com.faefluffkrist.trimworks.config.TrimEffectsConfig root() {
         return readOnly() ? TrimEffectsConfigManager.getDisplayConfig() : TrimEffectsConfigManager.getServerConfig();
     }
+    @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        net.minecraft.client.gui.screens.Screen.extractMenuBackgroundTexture(graphics,
+                net.minecraft.resources.Identifier.withDefaultNamespace("textures/block/cobbled_deepslate.png"),
+                0, 0, 0, 0, width, height);
+        graphics.fill(0, 0, width, height, 0x99000000);
+    }
     @Override protected void init() {
         int w = Math.min(360, width - 40), x = width / 2 - w / 2;
         boolean enabled = material ? root().materialBonuses.enabled : root().builtInBonuses.enabled;

@@ -15,6 +15,12 @@ final class RelogNoticeScreen extends Screen {
         this.returnTo = returnTo;
     }
 
+    @Override public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        net.minecraft.client.gui.screens.Screen.extractMenuBackgroundTexture(graphics,
+                net.minecraft.resources.Identifier.withDefaultNamespace("textures/block/cobbled_deepslate.png"),
+                0, 0, 0, 0, width, height);
+        graphics.fill(0, 0, width, height, 0x99000000);
+    }
     @Override
     protected void init() {
         // Use real widgets for the notice text. In 26.2 these are collected by the
