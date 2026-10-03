@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.material.redstone_distance.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.material.redstone_distance.description"
+    },
+    "icon": {
+      "id": "minecraft:redstone"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:materials",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

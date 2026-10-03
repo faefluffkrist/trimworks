@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.naturally_trimmed.slay_trimmed.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.naturally_trimmed.slay_trimmed.description"
+    },
+    "icon": {
+      "id": "minecraft:iron_sword"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:naturally_trimmed/root",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

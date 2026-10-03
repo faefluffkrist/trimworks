@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.material.resin_honey.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.material.resin_honey.description"
+    },
+    "icon": {
+      "id": "minecraft:honey_bottle"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:materials",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

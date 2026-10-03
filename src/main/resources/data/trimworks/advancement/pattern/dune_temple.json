@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.dune_temple.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.dune_temple.description"
+    },
+    "icon": {
+      "id": "minecraft:chiseled_sandstone"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/dune"
+}

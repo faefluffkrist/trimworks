@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.sets.tide.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.sets.tide.description"
+    },
+    "icon": {
+      "id": "minecraft:tide_armor_trim_smithing_template"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:full_sets",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

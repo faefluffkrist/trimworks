@@ -21,4 +21,17 @@ public final class BuiltInBonusesConfig {
     public boolean eyeEndermanGazeImmunity = true;
     public boolean snoutBruteHoglinNeutrality = true;
     public boolean ribWitherImmunity = true;
+    public double wardSneakTwoPieces = 0.15D;
+    public double wardSneakFourPieces = 0.30D;
+    public int wardSpeedLevel = 1;
+    public int silenceSpeedLevel = 1;
+    public int silenceMarkTicks = 200;
+    public int tideGraceLevel = 1;
+    public int coastConduitLevel = 1;
+    public int duneSpeedLevel = 2;
+    public int wildSpeedLevel = 2;
+    public int eyeSpeedLevel = 2;
+    public double boltKnockbackTwoPieces = 0.45D;
+    public double boltKnockbackFourPieces = 0.90D;
+    public java.util.Map<String, java.util.List<BonusRule>> extraBonuses = new java.util.LinkedHashMap<>();
 }

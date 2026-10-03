@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.full_sets.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.full_sets.description"
+    },
+    "icon": {
+      "id": "minecraft:diamond_chestplate"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "parent": "trimworks:root"
+}

@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.shaper_diamonds.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.shaper_diamonds.description"
+    },
+    "icon": {
+      "id": "minecraft:diamond"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/shaper"
+}

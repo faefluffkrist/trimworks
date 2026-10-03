@@ -29,13 +29,14 @@ public final class MaterialTrimBonuses {
 
     public static boolean enabled() { return config().enabled; }
 
-    public static int pieces(ServerPlayer player, String materialId) {
+    public static int pieces(net.minecraft.world.entity.LivingEntity player, String materialId) {
+        if (!MobTrimCompatibility.allows(player, materialId, 2)) return 0;
         int count = 0;
         for (EquipmentSlot slot : ARMOR_SLOTS) if (hasMaterial(player.getItemBySlot(slot), materialId)) count++;
         return count;
     }
 
-    public static boolean hasAtLeast(ServerPlayer player, String materialId, int count) {
+    public static boolean hasAtLeast(net.minecraft.world.entity.LivingEntity player, String materialId, int count) {
         return enabled() && pieces(player, materialId) >= count;
     }
 
@@ -47,20 +48,20 @@ public final class MaterialTrimBonuses {
     }
 
     /** The smithing ingredient is resin_brick; the resulting trim material registry id is minecraft:resin. */
-    public static boolean hasAmberAtLeast(ServerPlayer player, int count) {
+    public static boolean hasAmberAtLeast(net.minecraft.world.entity.LivingEntity player, int count) {
         return enabled() && (pieces(player, "minecraft:resin") >= count || pieces(player, "minecraft:amber") >= count);
     }
 
-    public static void tick(ServerPlayer player) {
+    public static void tick(net.minecraft.world.entity.LivingEntity player) {
         var cfg = config();
         applyAttribute(player, Attributes.KNOCKBACK_RESISTANCE, IRON_KB_ID,
-                cfg.enabled && cfg.ironKnockbackResistance && hasAtLeast(player, "minecraft:iron", 4) ? 0.10D : 0.0D,
+                cfg.enabled && cfg.ironKnockbackResistance && hasAtLeast(player, "minecraft:iron", 4) ? cfg.ironResistance : 0.0D,
                 AttributeModifier.Operation.ADD_VALUE);
         applyAttribute(player, Attributes.MOVEMENT_SPEED, REDSTONE_SPEED_ID,
-                cfg.enabled && cfg.redstoneMovementSpeed && hasAtLeast(player, "minecraft:redstone", 4) ? 0.025D : 0.0D,
+                cfg.enabled && cfg.redstoneMovementSpeed && hasAtLeast(player, "minecraft:redstone", 4) ? cfg.redstoneSpeedPercent / 100.0D : 0.0D,
                 AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         applyAttribute(player, Attributes.ARMOR_TOUGHNESS, DIAMOND_TOUGHNESS_ID,
-                cfg.enabled && cfg.diamondArmorToughness && hasAtLeast(player, "minecraft:diamond", 4) ? 1.0D : 0.0D,
+                cfg.enabled && cfg.diamondArmorToughness && hasAtLeast(player, "minecraft:diamond", 4) ? cfg.diamondToughness : 0.0D,
                 AttributeModifier.Operation.ADD_VALUE);
 
         // Copper is intentionally a little silly: a full copper-trim set resists lightning,
@@ -69,7 +70,7 @@ public final class MaterialTrimBonuses {
         if (cfg.enabled && cfg.copperLightningResistance
                 && hasAtLeast(player, "minecraft:copper", 4)
                 && player.level().isThundering()
-                && player.getRandom().nextInt(6000) == 0) {
+                && player.getRandom().nextInt(Math.max(1, cfg.copperLightningInterval)) == 0) {
             var type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:lightning_bolt"));
             if (type != null) {
                 var entity = type.create(player.level(), EntitySpawnReason.TRIGGERED);
@@ -81,7 +82,7 @@ public final class MaterialTrimBonuses {
         }
     }
 
-    private static void applyAttribute(ServerPlayer player, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
+    private static void applyAttribute(net.minecraft.world.entity.LivingEntity player, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
                                        Identifier id, double amount, AttributeModifier.Operation operation) {
         var instance = player.getAttribute(attribute);
         if (instance == null) return;

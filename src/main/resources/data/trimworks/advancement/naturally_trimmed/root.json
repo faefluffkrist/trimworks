@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.naturally_trimmed.root.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.naturally_trimmed.root.description"
+    },
+    "icon": {
+      "id": "minecraft:iron_chestplate"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "trimworks:root"
+}

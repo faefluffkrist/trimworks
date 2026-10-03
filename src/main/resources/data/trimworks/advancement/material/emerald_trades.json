@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.material.emerald_trades.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.material.emerald_trades.description"
+    },
+    "icon": {
+      "id": "minecraft:emerald"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:materials",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

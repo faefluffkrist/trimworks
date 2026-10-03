@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.material.quartz_ghast.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.material.quartz_ghast.description"
+    },
+    "icon": {
+      "id": "minecraft:lead"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:material/quartz_fossil",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

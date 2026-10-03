@@ -46,7 +46,9 @@ public final class TrimEffectsConfigManager {
     }
 
     public static String toServerJson() {
-        return GSON.toJson(config);
+        var json = GSON.toJsonTree(config).getAsJsonObject();
+        json.addProperty("detectedNaturallyTrimmed", com.faefluffkrist.trimworks.gameplay.MobTrimCompatibility.installed());
+        return GSON.toJson(json);
     }
 
     public static boolean acceptServerJson(String json) {
@@ -100,6 +102,17 @@ public final class TrimEffectsConfigManager {
             migrateMaterialBonusesV7();
             migrateMaterialBonusesV8();
             migrateTwoPieceMinimumV9();
+            if (config.builtInBonuses == null) config.builtInBonuses = new BuiltInBonusesConfig();
+            if (config.materialBonuses == null) config.materialBonuses = new MaterialBonusesConfig();
+            if (config.builtInBonuses.extraBonuses == null) config.builtInBonuses.extraBonuses = new LinkedHashMap<>();
+            if (config.materialBonuses.extraBonuses == null) config.materialBonuses.extraBonuses = new LinkedHashMap<>();
+            if (config.configVersion < 10) { config.configVersion = 10; save(); }
+            if (config.mobBonuses == null) config.mobBonuses = new MobBonusesConfig();
+            if (config.mobBonuses.mainTrimBlacklist == null) config.mobBonuses.mainTrimBlacklist = new java.util.LinkedHashSet<>();
+            if (config.mobBonuses.fullSetBlacklist == null) config.mobBonuses.fullSetBlacklist = new java.util.LinkedHashSet<>();
+            if (config.mobBonuses.materialBlacklist == null) config.mobBonuses.materialBlacklist = new java.util.LinkedHashSet<>();
+            config.detectedNaturallyTrimmed = null;
+            if (config.configVersion < 11) { config.configVersion = 11; save(); }
             validate();
             LOGGER.info("Loaded Trimworks config with {} trim definitions.", config.trims.size());
         } catch (IOException | JsonParseException e) {

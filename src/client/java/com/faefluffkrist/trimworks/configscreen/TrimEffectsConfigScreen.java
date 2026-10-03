@@ -1,222 +1,86 @@
 package com.faefluffkrist.trimworks.configscreen;
 
-import com.faefluffkrist.trimworks.config.TrimDefinition;
 import com.faefluffkrist.trimworks.config.TrimEffectsConfigManager;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-public final class TrimEffectsConfigScreen extends Screen {
+public final class TrimEffectsConfigScreen extends ScrollingConfigScreen {
     private final Screen parent;
-    private int scrollRow;
-    private int visibleRows;
-    private int listTop;
-    private int listBottom;
-    private int scrollbarX;
-    private boolean draggingScrollbar;
+    private int category;
     private boolean changesSaved;
-
-    public TrimEffectsConfigScreen(Screen parent) {
-        super(Component.literal("Trimworks Configuration"));
-        this.parent = parent;
-    }
-
-    private boolean remoteReadOnly() {
-        return TrimEffectsConfigManager.hasServerSync() && !minecraft.hasSingleplayerServer();
-    }
-
-    private List<String> sortedIds() {
-        var config = remoteReadOnly() ? TrimEffectsConfigManager.getDisplayConfig() : TrimEffectsConfigManager.getServerConfig();
-        List<String> ids = new ArrayList<>(config.trims.keySet());
-        ids.sort(Comparator.comparing(TrimEffectsConfigScreen::pretty, String.CASE_INSENSITIVE_ORDER));
-        return ids;
-    }
-
-    @Override
-    protected void init() {
-        var shownConfig = remoteReadOnly() ? TrimEffectsConfigManager.getDisplayConfig() : TrimEffectsConfigManager.getServerConfig();
-        List<String> ids = sortedIds();
-
-        listTop = remoteReadOnly() ? 52 : 40;
-        int footerSpace = 90;
-        visibleRows = Math.max(1, Math.min(ids.size(), (height - listTop - footerSpace) / 24));
-        int maxScroll = Math.max(0, ids.size() - visibleRows);
-        scrollRow = Math.max(0, Math.min(scrollRow, maxScroll));
-
-        int buttonWidth = Math.min(460, width - 46);
-        int buttonLeft = width / 2 - buttonWidth / 2;
-        scrollbarX = buttonLeft + buttonWidth + 7;
-        int y = listTop;
-        for (int i = scrollRow; i < Math.min(ids.size(), scrollRow + visibleRows); i++) {
-            String id = ids.get(i);
-            TrimDefinition def = shownConfig.trims.get(id);
-            boolean enabled = def != null && def.enabled;
-
-            // Build this from an unstyled root. If the gold/bold trim component is
-            // used as the root, Minecraft lets that style bleed into appended text.
-            Component label = Component.empty()
-                    .append(Component.literal(pretty(id)).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-                    .append(Component.literal(" Settings ").withStyle(ChatFormatting.BOLD))
-                    .append(Component.literal("| ").withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD))
-                    .append(Component.literal("Currently Configured to be").withStyle(ChatFormatting.WHITE, ChatFormatting.ITALIC))
-                    .append(Component.literal(" ["))
-                    .append(Component.literal(enabled ? "ON" : "OFF").withStyle(enabled ? ChatFormatting.GREEN : ChatFormatting.RED))
-                    .append(Component.literal("]"));
-
-            addRenderableWidget(Button.builder(label, b -> minecraft.gui.setScreen(new TrimDetailScreen(this, id)))
-                    .bounds(buttonLeft, y, buttonWidth, 20).build());
-            y += 24;
+    private Component status=Component.empty();
+    private List<String> ids=List.of();
+    private static final String[] TABS={"Main Trims","Full Set Bonus","Materials"};
+    private static final String[] DESCRIPTIONS={"Status effects by equipped piece count","Built-in abilities and extra full-set bonuses","Bonuses from matching trim materials"};
+    public TrimEffectsConfigScreen(Screen parent){super(Component.literal("Trimworks 1.1.0 Configuration"));this.parent=parent;}
+    private com.faefluffkrist.trimworks.config.TrimEffectsConfig cfg(){return ConfigUi.readOnly()?TrimEffectsConfigManager.getDisplayConfig():TrimEffectsConfigManager.getServerConfig();}
+    @Override protected void init(){
+        var config=cfg();
+        ids=category==2?new ArrayList<>(List.of("minecraft:amethyst","minecraft:copper","minecraft:diamond","minecraft:emerald","minecraft:gold","minecraft:iron","minecraft:lapis","minecraft:netherite","minecraft:quartz","minecraft:redstone","minecraft:resin")):new ArrayList<>(config.trims.keySet());
+        if(category==2&&config.materialBonuses.extraBonuses!=null)for(var id:config.materialBonuses.extraBonuses.keySet())if(!ids.contains(id))ids.add(id);
+        if (category == 2 && minecraft.level != null) minecraft.level.registryAccess().lookup(net.minecraft.core.registries.Registries.TRIM_MATERIAL).ifPresent(registry ->
+                registry.listElements().forEach(holder -> { String id = holder.key().identifier().toString(); if (!ids.contains(id)) ids.add(id); }));
+        ids.sort(Comparator.comparing(TrimEffectsConfigScreen::pretty,String.CASE_INSENSITIVE_ORDER));
+        int w=Math.min(460,width-48),x=width/2-w/2,tab=(w-8)/3;
+        for(int i=0;i<3;i++){final int selected=i;
+            var b=addRenderableWidget(Button.builder(Component.literal(TABS[i]),button->{category=selected;scrollRow=0;status=Component.empty();rebuildWidgets();}).bounds(x+i*(tab+4),34,tab,20).build());b.active=category!=i;
         }
-        listBottom = y;
-
-        addRenderableWidget(Button.builder(Component.literal("Built-In Pattern Bonuses"), b -> minecraft.gui.setScreen(new BuiltInBonusesScreen(this)))
-                .bounds(width / 2 - 110, y + 3, 220, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Trim Material Bonuses"), b -> minecraft.gui.setScreen(new MaterialBonusesScreen(this)))
-                .bounds(width / 2 - 110, y + 27, 220, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Done"), b -> finish())
-                .bounds(width / 2 - 60, y + 51, 120, 20).build());
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
-        List<String> ids = sortedIds();
-        int maxScroll = Math.max(0, ids.size() - visibleRows);
-        if (maxScroll > 0 && vertical != 0) {
-            int old = scrollRow;
-            scrollRow = Math.max(0, Math.min(maxScroll, scrollRow + (vertical > 0 ? -1 : 1)));
-            if (old != scrollRow) {
+        if(category!=0){
+            boolean on=category==1?config.builtInBonuses.enabled:config.materialBonuses.enabled;
+            var master=addRenderableWidget(Button.builder(ConfigUi.toggle(on),b->{
+                if(ConfigUi.readOnly())return;
+                if(category==1)config.builtInBonuses.enabled=!on;else config.materialBonuses.enabled=!on;
+                try{TrimEffectsConfigManager.save();markChangesSaved();status=Component.empty();}
+                catch(java.io.IOException e){if(category==1)config.builtInBonuses.enabled=on;else config.materialBonuses.enabled=on;status=Component.literal("Could not save settings");}
                 rebuildWidgets();
-                return true;
+            }).bounds(x+w-65,78,65,20).build());master.active=!ConfigUi.readOnly();
+        }
+        layoutRows(ids.size(),category==0?82:116,height-50,32,460);
+        for(int i=scrollRow;i<Math.min(ids.size(),scrollRow+visibleRows);i++){
+            String id=ids.get(i);int y=listTop+(i-scrollRow)*32;
+            if(category==0){
+                var definition=config.trims.get(id);boolean on=definition!=null&&definition.enabled;
+                var toggle=addRenderableWidget(Button.builder(ConfigUi.toggle(on),b->{
+                    if(ConfigUi.readOnly()||definition==null)return;definition.enabled=!on;
+                    try{TrimEffectsConfigManager.save();markChangesSaved();}catch(java.io.IOException e){definition.enabled=on;status=Component.literal("Could not save settings");}rebuildWidgets();
+                }).bounds(listX+listWidth-125,y+3,55,20).build());toggle.active=!ConfigUi.readOnly();
             }
+            addRenderableWidget(Button.builder(Component.literal("Edit"),b->{
+                minecraft.gui.setScreen(category==0?new TrimDetailScreen(this,id):new BonusSettingsScreen(this,this,category==2,id));
+            }).bounds(listX+listWidth-65,y+3,65,20).build());
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontal, vertical);
+        boolean compat = com.faefluffkrist.trimworks.gameplay.MobTrimCompatibility.availableInMenu(config);
+        var compatibility = addRenderableWidget(Button.builder(Component.literal("Naturally Trimmed"), b ->
+                minecraft.gui.setScreen(new MobCompatibilityScreen(this))).bounds(width/2-144,height-28,178,20).build());
+        compatibility.active = compat;
+        compatibility.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(compat
+                ? "Configure non-player trim bonuses" : "Requires Naturally Trimmed on the server or in singleplayer")));
+        addRenderableWidget(Button.builder(Component.literal("Done"),b->finish()).bounds(width/2+42,height-28,102,20).build());
     }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && hasScrollbar()
-                && event.x() >= scrollbarX - 2 && event.x() <= scrollbarX + 8
-                && event.y() >= listTop && event.y() <= scrollbarTrackBottom()) {
-            draggingScrollbar = true;
-            setScrollFromMouse(event.y());
-            return true;
+    @Override public void extractRenderState(GuiGraphicsExtractor g,int mx,int my,float delta){
+        super.extractRenderState(g,mx,my,delta);g.centeredText(font,title,width/2,12,0xFFFFFFFF);
+        g.centeredText(font,Component.literal(DESCRIPTIONS[category]),width/2,62,0xFFB7C7CC);
+        if(category!=0){
+            g.text(font,Component.literal(category==1?"Enable full-set pattern bonuses":"Enable material bonuses"),listX,80,0xFFFFFFFF);
+            ConfigUi.text(g,font,"Applies to this entire category",listX,94,listWidth-78,1,0xFF999999);
         }
-        return super.mouseClicked(event, doubleClick);
-    }
-
-    @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
-        if (draggingScrollbar) {
-            setScrollFromMouse(event.y());
-            return true;
+        for(int i=scrollRow;i<Math.min(ids.size(),scrollRow+visibleRows);i++){
+            String id=ids.get(i);int y=listTop+(i-scrollRow)*32;
+            g.fill(listX,y,listX+listWidth-(category==0?132:72),y+27,0x40333C42);
+            ConfigUi.text(g,font,pretty(id),listX+7,y+8,listWidth-(category==0?145:85),1,0xFFFFE0A1);
         }
-        return super.mouseDragged(event, dx, dy);
+        drawScrollbar(g);
+        g.centeredText(font,status.getString().isEmpty()?Component.literal(ConfigUi.readOnly()?"Server configuration • read-only":"Changes require reopening the world"):status,width/2,height-43,0xFFAAAAAA);
     }
-
-    @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        if (draggingScrollbar) {
-            draggingScrollbar = false;
-            return true;
-        }
-        return super.mouseReleased(event);
-    }
-
-    private boolean hasScrollbar() {
-        return sortedIds().size() > visibleRows;
-    }
-
-    private int scrollbarTrackBottom() {
-        return listTop + visibleRows * 24 - 4;
-    }
-
-    private int scrollbarThumbHeight() {
-        int total = sortedIds().size();
-        int trackHeight = Math.max(1, scrollbarTrackBottom() - listTop);
-        if (total <= 0) return trackHeight;
-        return Math.max(18, Math.min(trackHeight, trackHeight * visibleRows / total));
-    }
-
-    private int scrollbarThumbTop() {
-        int maxScroll = Math.max(0, sortedIds().size() - visibleRows);
-        int trackHeight = Math.max(1, scrollbarTrackBottom() - listTop);
-        int thumbHeight = scrollbarThumbHeight();
-        int travel = Math.max(0, trackHeight - thumbHeight);
-        return maxScroll == 0 ? listTop : listTop + (travel * scrollRow / maxScroll);
-    }
-
-    private void setScrollFromMouse(double mouseY) {
-        List<String> ids = sortedIds();
-        int maxScroll = Math.max(0, ids.size() - visibleRows);
-        if (maxScroll == 0) return;
-
-        int trackHeight = Math.max(1, scrollbarTrackBottom() - listTop);
-        int thumbHeight = scrollbarThumbHeight();
-        int travel = Math.max(1, trackHeight - thumbHeight);
-        double relative = mouseY - listTop - thumbHeight / 2.0;
-        int newScroll = (int) Math.round((relative / travel) * maxScroll);
-        newScroll = Math.max(0, Math.min(maxScroll, newScroll));
-        if (newScroll != scrollRow) {
-            scrollRow = newScroll;
-            rebuildWidgets();
-            draggingScrollbar = true;
-        }
-    }
-
-    void markChangesSaved() {
-        changesSaved = true;
-    }
-
-    private void finish() {
-        if (changesSaved && !remoteReadOnly()) {
-            minecraft.gui.setScreen(new RelogNoticeScreen(parent));
-        } else {
-            minecraft.gui.setScreen(parent);
-        }
-    }
-
-    @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(font, title, width / 2, 14, 0xFFFFFF);
-
-        if (remoteReadOnly()) {
-            graphics.centeredText(font, Component.literal("Viewing server configuration (read-only)"), width / 2, 30, 0xAAAAAA);
-        }
-
-        if (hasScrollbar()) {
-            int trackBottom = scrollbarTrackBottom();
-            int thumbTop = scrollbarThumbTop();
-            int thumbBottom = thumbTop + scrollbarThumbHeight();
-            graphics.fill(scrollbarX, listTop, scrollbarX + 6, trackBottom, 0x66000000);
-            graphics.fill(scrollbarX + 1, thumbTop, scrollbarX + 5, thumbBottom, draggingScrollbar ? 0xFFFFFFFF : 0xFFAAAAAA);
-        }
-    }
-
-    @Override public void onClose() { finish(); }
-
-    static String pretty(String id) {
-        String namespace = "minecraft";
-        String path = id;
-        int colon = id.indexOf(':');
-        if (colon >= 0) {
-            namespace = id.substring(0, colon);
-            path = id.substring(colon + 1);
-        }
-        String[] parts = path.split("_");
-        StringBuilder out = new StringBuilder();
-        for (String part : parts) {
-            if (!out.isEmpty()) out.append(' ');
-            if (!part.isEmpty()) out.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
-        }
-        if (!"minecraft".equals(namespace)) out.append(" (").append(namespace).append(')');
-        return out.toString();
+    void markChangesSaved(){changesSaved=true;}
+    private void finish(){minecraft.gui.setScreen(changesSaved&&!ConfigUi.readOnly()?new RelogNoticeScreen(parent):parent);}
+    @Override public void onClose(){finish();}
+    static String pretty(String id){
+        int colon=id.indexOf(':');String namespace=colon>=0?id.substring(0,colon):"minecraft",path=colon>=0?id.substring(colon+1):id;
+        StringBuilder result=new StringBuilder();for(String word:path.split("[_/]+")){if(!result.isEmpty())result.append(' ');if(!word.isEmpty())result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));}
+        if(!namespace.equals("minecraft"))result.append(" (").append(namespace).append(')');return result.toString();
     }
 }

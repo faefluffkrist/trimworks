@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.eye_dragon.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.eye_dragon.description"
+    },
+    "icon": {
+      "id": "minecraft:dragon_egg"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/eye"
+}

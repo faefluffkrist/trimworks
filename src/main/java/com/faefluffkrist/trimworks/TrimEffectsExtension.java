@@ -10,6 +10,7 @@ public final class TrimEffectsExtension implements ModInitializer {
     public void onInitialize() {
         TrimEffectsConfigManager.load();
         TrimConfigSync.registerCommon();
+        com.faefluffkrist.trimworks.advancement.TrimAdvancements.register();
         TrimGameplay.register();
     }
 }

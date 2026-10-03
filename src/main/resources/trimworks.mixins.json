@@ -12,7 +12,25 @@
     "PiglinAiMixin",
     "ServerPlayerMaterialDamageMixin",
     "ExperienceOrbMixin",
-    "VillagerMixin"
+    "VillagerMixin",
+    "LivingEntityMobTrimMixin",
+    "TemplateCraftAdvancementMixin",
+    "SmithingAdvancementMixin",
+    "TradeAdvancementMixin",
+    "PlayerProgressAdvancementMixin",
+    "LivingAdvancementMixin",
+    "CatalystAdvancementMixin",
+    "HappyGhastAdvancementMixin",
+    "LightningAdvancementMixin",
+    "QuickSmithingAdvancementMixin",
+    "WardenAngerAccessor",
+    "TrialParticipantsAccessor",
+    "TrialCompletionAdvancementMixin",
+    "HuskAdvancementMixin",
+    "TripwireAdvancementMixin",
+    "StructureLootAdvancementMixin",
+    "DragonAdvancementMixin",
+    "TrimAdvancementVisibilityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

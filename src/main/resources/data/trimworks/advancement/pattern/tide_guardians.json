@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.tide_guardians.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.tide_guardians.description"
+    },
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/tide"
+}

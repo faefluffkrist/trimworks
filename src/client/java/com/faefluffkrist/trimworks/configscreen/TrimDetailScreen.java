@@ -1,142 +1,90 @@
 package com.faefluffkrist.trimworks.configscreen;
 
-import com.faefluffkrist.trimworks.config.ConfiguredEffect;
-import com.faefluffkrist.trimworks.config.TrimDefinition;
-import com.faefluffkrist.trimworks.config.TrimEffectsConfig;
-import com.faefluffkrist.trimworks.config.TrimEffectsConfigManager;
+import com.faefluffkrist.trimworks.config.*;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import java.util.*;
 
-import java.io.IOException;
-
-final class TrimDetailScreen extends Screen {
-    private final Screen parent;
+/** Regular trim progression editor. All edits stay in a draft until Save. */
+final class TrimDetailScreen extends ScrollingConfigScreen {
+    private final TrimEffectsConfigScreen parent;
     private final String trimId;
-    private TrimDefinition definition;
+    private TrimDefinition draft;
     private int effectIndex;
-    private EditBox effectId;
-    private final EditBox[] levels = new EditBox[4];
-    private Component status = Component.empty();
-
-    TrimDetailScreen(Screen parent, String trimId) {
-        super(Component.literal(TrimEffectsConfigScreen.pretty(trimId) + " Settings"));
-        this.parent = parent;
-        this.trimId = trimId;
-        this.definition = currentConfig().trims.get(trimId);
+    private final Map<ConfiguredEffect,Map<String,String>> rawLevels=new IdentityHashMap<>();
+    private Component status=Component.empty();
+    TrimDetailScreen(TrimEffectsConfigScreen parent,String trimId){
+        super(Component.literal(TrimEffectsConfigScreen.pretty(trimId)+" • Main Effects"));this.parent=parent;this.trimId=trimId;
+        var root=ConfigUi.readOnly()?TrimEffectsConfigManager.getDisplayConfig():TrimEffectsConfigManager.getServerConfig();
+        draft=copy(root.trims.get(trimId));
     }
-
-    private boolean remoteReadOnly() {
-        return TrimEffectsConfigManager.hasServerSync() && !minecraft.hasSingleplayerServer();
+    private static TrimDefinition copy(TrimDefinition original){
+        var result=new TrimDefinition();if(original==null){result.enabled=false;return result;}result.enabled=original.enabled;
+        if(original.effects!=null)for(var old:original.effects)if(old!=null){var effect=new ConfiguredEffect();effect.id=old.id;effect.levels=old.levels==null?new LinkedHashMap<>():new LinkedHashMap<>(old.levels);result.effects.add(effect);}
+        return result;
     }
-
-    private TrimEffectsConfig currentConfig() {
-        return remoteReadOnly() ? TrimEffectsConfigManager.getDisplayConfig() : TrimEffectsConfigManager.getServerConfig();
-    }
-
-    @Override
-    protected void init() {
-        definition = currentConfig().trims.get(trimId);
-        if (definition == null) { onClose(); return; }
-        if (definition.effects.isEmpty()) definition.effects.add(new ConfiguredEffect("minecraft:strength", 0,0,0,0));
-        effectIndex = Math.max(0, Math.min(effectIndex, definition.effects.size() - 1));
-        ConfiguredEffect effect = definition.effects.get(effectIndex);
-
-        addRenderableWidget(Button.builder(Component.literal("Enabled: " + (definition.enabled ? "ON" : "OFF")), b -> {
-            definition.enabled = !definition.enabled;
-            rebuildWidgets();
-        }).bounds(width / 2 - 110, 38, 220, 20).build());
-
-        effectId = addRenderableWidget(new EditBox(font, width / 2 - 110, 86, 220, 20, Component.literal("Effect registry ID")));
-        effectId.setMaxLength(128);
-        effectId.setValue(effect.id == null ? "" : effect.id);
-
-        int y = 128;
-        for (int i = 0; i < 4; i++) {
-            levels[i] = addRenderableWidget(new EditBox(font, width / 2 + 25, y, 85, 20, Component.literal("Level for " + (i + 1) + " pieces")));
-            levels[i].setMaxLength(3);
-            levels[i].setValue(Integer.toString(effect.levels.getOrDefault(Integer.toString(i + 1), 0)));
-            y += 25;
-        }
-
-        Button prev = addRenderableWidget(Button.builder(Component.literal("< Effect"), b -> { storeFields(); effectIndex--; rebuildWidgets(); })
-                .bounds(width / 2 - 110, 232, 70, 20).build());
-        Button next = addRenderableWidget(Button.builder(Component.literal("Effect >"), b -> { storeFields(); effectIndex++; rebuildWidgets(); })
-                .bounds(width / 2 + 40, 232, 70, 20).build());
-        prev.active = effectIndex > 0;
-        next.active = effectIndex < definition.effects.size() - 1;
-
-        addRenderableWidget(Button.builder(Component.literal("Add Effect"), b -> {
-            storeFields(); definition.effects.add(new ConfiguredEffect("minecraft:strength",0,0,0,0)); effectIndex = definition.effects.size()-1; rebuildWidgets();
-        }).bounds(width / 2 - 110, 257, 105, 20).build());
-        Button remove = addRenderableWidget(Button.builder(Component.literal("Remove Effect"), b -> {
-            definition.effects.remove(effectIndex); if (definition.effects.isEmpty()) definition.effects.add(new ConfiguredEffect("minecraft:strength",0,0,0,0)); effectIndex=Math.min(effectIndex,definition.effects.size()-1); rebuildWidgets();
-        }).bounds(width / 2 + 5, 257, 105, 20).build());
-        remove.active = definition.effects.size() > 1;
-
-        addRenderableWidget(Button.builder(Component.literal("Reset Trim"), b -> resetTrim())
-                .bounds(width / 2 - 110, height - 58, 105, 20).build());
-        Button save = addRenderableWidget(Button.builder(Component.literal(remoteReadOnly() ? "Back" : "Save & Back"), b -> {
-            if (remoteReadOnly()) onClose(); else saveAndClose();
-        }).bounds(width / 2 + 5, height - 58, 105, 20).build());
-
-        if (remoteReadOnly()) {
-            for (var child : children()) {
-                if (child instanceof Button button && button != save) button.active = false;
-                if (child instanceof EditBox box) box.setEditable(false);
+    private ConfiguredEffect current(){return draft.effects.isEmpty()?null:draft.effects.get(effectIndex);}
+    private Map<String,String> raw(ConfiguredEffect effect){return rawLevels.computeIfAbsent(effect,e->{var m=new LinkedHashMap<String,String>();for(int i=1;i<=4;i++)m.put(Integer.toString(i),Integer.toString(e.levels.getOrDefault(Integer.toString(i),0)));return m;});}
+    @Override protected void init(){
+        effectIndex=Math.max(0,Math.min(effectIndex,Math.max(0,draft.effects.size()-1)));
+        layoutRows(draft.effects.isEmpty()?1:6,48,height-82,54,420);
+        for(int row=scrollRow;row<Math.min(draft.effects.isEmpty()?1:6,scrollRow+visibleRows);row++){
+            int y=listTop+(row-scrollRow)*rowHeight;
+            if(row==0){
+                var b=addRenderableWidget(Button.builder(ConfigUi.toggle(draft.enabled),button->{draft.enabled=!draft.enabled;rebuildWidgets();}).bounds(listX+listWidth-70,y+3,70,20).build());b.active=!ConfigUi.readOnly();
+            }else if(row==1){
+                var effect=current();
+                var b=addRenderableWidget(Button.builder(Component.literal("Choose / search effect"),button->minecraft.gui.setScreen(new RegistryPickerScreen(this,false,id->{effect.id=id;status=Component.empty();}))).bounds(listX+listWidth-145,y+3,145,20).build());b.active=!ConfigUi.readOnly();
+            }else{
+                String key=Integer.toString(row-1);var raw=raw(current());
+                var box=addRenderableWidget(new EditBox(font,listX+listWidth-65,y+3,65,20,Component.literal("Effect level with "+key+" matching pieces")));
+                box.setMaxLength(3);box.setValue(raw.get(key));box.setEditable(!ConfigUi.readOnly());box.setResponder(value->raw.put(key,value));
             }
         }
+        int x=listX,w=listWidth,y=height-53;
+        var prev=addRenderableWidget(Button.builder(Component.literal("<"),b->{effectIndex--;scrollRow=0;rebuildWidgets();}).bounds(x,y,25,20).build());prev.active=effectIndex>0;
+        var next=addRenderableWidget(Button.builder(Component.literal(">"),b->{effectIndex++;scrollRow=0;rebuildWidgets();}).bounds(x+29,y,25,20).build());next.active=effectIndex<draft.effects.size()-1;
+        var add=addRenderableWidget(Button.builder(Component.literal("Add Effect"),b->{draft.effects.add(new ConfiguredEffect("minecraft:strength",0,0,0,0));effectIndex=draft.effects.size()-1;scrollRow=1;rebuildWidgets();}).bounds(x+62,y,(w-70)/2,20).build());add.active=!ConfigUi.readOnly();
+        var remove=addRenderableWidget(Button.builder(Component.literal("Remove"),b->{draft.effects.remove(effectIndex);effectIndex=Math.max(0,effectIndex-1);scrollRow=0;rebuildWidgets();}).bounds(x+66+(w-70)/2,y,(w-70)/2,20).build());remove.active=!ConfigUi.readOnly()&&!draft.effects.isEmpty();
+        addRenderableWidget(Button.builder(Component.literal("Back"),b->onClose()).bounds(x,height-28,65,20).build());
+        var reset=addRenderableWidget(Button.builder(Component.literal("Reset"),b->{draft=copy(TrimEffectsConfig.defaults().trims.get(trimId));rawLevels.clear();effectIndex=0;scrollRow=0;status=Component.literal("Defaults restored to draft; save to keep");rebuildWidgets();}).bounds(x+70,height-28,65,20).build());reset.active=!ConfigUi.readOnly();
+        var save=addRenderableWidget(Button.builder(Component.literal("Save & Back"),b->save()).bounds(x+w-105,height-28,105,20).build());save.active=!ConfigUi.readOnly();
     }
-
-    private void storeFields() {
-        if (effectId == null || definition.effects.isEmpty()) return;
-        ConfiguredEffect effect = definition.effects.get(effectIndex);
-        effect.id = effectId.getValue().trim();
-        for (int i = 0; i < 4; i++) {
-            try { effect.levels.put(Integer.toString(i + 1), Math.max(0, Math.min(255, Integer.parseInt(levels[i].getValue().trim())))); }
-            catch (NumberFormatException ignored) { effect.levels.put(Integer.toString(i + 1), 0); }
-        }
-    }
-
-    private void saveAndClose() {
-        storeFields();
-        try {
-            TrimEffectsConfigManager.save();
-            status = Component.literal("Saved");
-            if (parent instanceof TrimEffectsConfigScreen configScreen) {
-                configScreen.markChangesSaved();
+    private void save(){
+        try{
+            for(var effect:draft.effects){
+                var id=Identifier.tryParse(effect.id==null?"":effect.id);
+                if(id==null||!BuiltInRegistries.MOB_EFFECT.containsKey(id))throw new IllegalArgumentException("Choose a registered status effect");
+                for(var entry:raw(effect).entrySet()){
+                    int level=Integer.parseInt(entry.getValue().trim());if(level<0||level>255)throw new IllegalArgumentException("Levels must be 0–255; 0 disables that step");effect.levels.put(entry.getKey(),level);
+                }
             }
-            // Returning to the existing parent instance re-runs init(), but keeps
-            // the saved/relog status that was set above.
-            minecraft.gui.setScreen(parent);
-        } catch (IOException e) {
-            status = Component.literal("Could not save config: " + e.getMessage());
+            var root=TrimEffectsConfigManager.getServerConfig();var old=root.trims.put(trimId,draft);
+            try{TrimEffectsConfigManager.save();}catch(java.io.IOException e){root.trims.put(trimId,old);throw e;}
+            parent.markChangesSaved();minecraft.gui.setScreen(parent);
+        }catch(Exception e){status=Component.literal(e instanceof NumberFormatException?"Enter a whole level from 0 to 255":e.getMessage()==null?"Could not save":e.getMessage());}
+    }
+    @Override public void extractRenderState(GuiGraphicsExtractor g,int mx,int my,float delta){
+        super.extractRenderState(g,mx,my,delta);g.centeredText(font,title,width/2,12,0xFFFFFFFF);
+        g.centeredText(font,Component.literal(ConfigUi.readOnly()?"Server configuration • read-only":draft.effects.isEmpty()?"No effects configured • Add Effect to begin":"Current effect: "+EffectGuide.name(current().id,false)),width/2,28,0xFFAAAAAA);
+        for(int row=scrollRow;row<Math.min(draft.effects.isEmpty()?1:6,scrollRow+visibleRows);row++){
+            int y=listTop+(row-scrollRow)*rowHeight;
+            if(row==0){
+                g.text(font,Component.literal("Enable this trim’s main effects"),listX+4,y+7,0xFFFFE0A1);
+                ConfigUi.text(g,font,"Only equipped armor counts. Full-set bonuses have separate controls.",listX+4,y+29,listWidth-8,2,0xFFA8B8BF);
+            }else if(row==1){
+                ConfigUi.text(g,font,EffectGuide.name(current().id,false),listX+4,y+7,listWidth-155,2,0xFFFFE0A1);
+                ConfigUi.text(g,font,EffectGuide.guide(current().id),listX+4,y+29,listWidth-8,2,0xFFA8B8BF);
+            }else{
+                int pieces=row-1;g.text(font,Component.literal(pieces+" piece"+(pieces==1?"":"s")+" of the set"),listX+4,y+7,0xFFFFE0A1);
+                ConfigUi.text(g,font,"Level of "+EffectGuide.name(current().id,false)+" with exactly "+pieces+" equipped piece"+(pieces==1?"":"s")+". 0 = OFF; 1 = level I.",listX+4,y+29,listWidth-8,2,0xFFA8B8BF);
+            }
         }
+        drawScrollbar(g);ConfigUi.text(g,font,status.getString().isEmpty()&&!draft.effects.isEmpty()?"Effect "+(effectIndex+1)+" / "+draft.effects.size()+" • Levels 0–255":status.getString(),listX,height-69,listWidth,1,0xFFFFCC77);
     }
-
-    private void resetTrim() {
-        if (remoteReadOnly()) return;
-        TrimDefinition fresh = TrimEffectsConfig.defaults().trims.get(trimId);
-        if (fresh == null) {
-            fresh = new TrimDefinition();
-            fresh.enabled = false;
-        }
-        TrimEffectsConfigManager.getServerConfig().trims.put(trimId, fresh);
-        definition = fresh; effectIndex = 0; status = Component.literal("Reset to default (save to keep)"); rebuildWidgets();
-    }
-
-    @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(font, title, width / 2, 14, 0xFFFFFF);
-        graphics.text(font, Component.literal("Effect registry ID"), width / 2 - 110, 72, 0xAAAAAA);
-        graphics.centeredText(font, Component.literal("Effect " + (effectIndex + 1) + " / " + definition.effects.size()), width / 2, 112, 0xAAAAAA);
-        for (int i=0;i<4;i++) graphics.text(font, Component.literal((i+1) + " matching piece" + (i==0?"":"s") + ":"), width/2-110, 134+i*25, 0xDDDDDD);
-        if (remoteReadOnly()) graphics.centeredText(font, Component.literal("Server configuration is read-only"), width/2, 30, 0xAAAAAA);
-        if (!status.getString().isEmpty()) graphics.centeredText(font, status, width/2, height-78, 0xAAAAAA);
-    }
-
-    @Override public void onClose() { minecraft.gui.setScreen(parent); }
+    @Override public void onClose(){minecraft.gui.setScreen(parent);}
 }

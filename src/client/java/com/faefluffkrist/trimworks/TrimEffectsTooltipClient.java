@@ -32,6 +32,12 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
     }
 
     private static void addTooltip(ItemStack stack, List<Component> tooltip) {
+        int firstAdded = tooltip.size();
+        addTrimTooltip(stack, tooltip);
+        TooltipLayout.wrapAddedLines(tooltip, firstAdded);
+    }
+
+    private static void addTrimTooltip(ItemStack stack, List<Component> tooltip) {
         ArmorTrim trim = stack.get(DataComponents.TRIM);
         if (trim != null) {
             addConfiguredTooltip(trim.pattern().value().assetId().toString(), tooltip, true);
@@ -86,21 +92,22 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
         // built-in melee knockback visible even before the full set is complete.
         var builtIns = TrimEffectsConfigManager.getDisplayConfig().builtInBonuses;
         if ("minecraft:bolt".equals(patternId) && builtIns != null && builtIns.enabled && builtIns.boltMeleeKnockback) {
-            tooltip.add(Component.literal("+ Melee Knockback: +1 at 2 pieces, +2 at 4 pieces").withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("+ Melee Knockback").withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("  2 pieces: " + signed(builtIns.boltKnockbackTwoPieces)).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal("  4 pieces: " + signed(builtIns.boltKnockbackFourPieces)).withStyle(ChatFormatting.GRAY));
             if (equippedPieces >= 2) {
-                int level = equippedPieces >= 4 ? 2 : 1;
-                tooltip.add(Component.literal("Active: +" + level + " Knockback (" + matchingTrimText(equippedPieces) + ")")
+                tooltip.add(Component.literal("Active: " + signed(equippedPieces >= 4 ? builtIns.boltKnockbackFourPieces : builtIns.boltKnockbackTwoPieces) + " Knockback")
                         .withStyle(ChatFormatting.YELLOW));
             }
         }
 
         // Ward's normal progression is a built-in sneaking-speed mechanic rather than a potion effect.
         if ("minecraft:ward".equals(patternId) && builtIns != null && builtIns.enabled && builtIns.wardSwiftSneak) {
-            tooltip.add(Component.literal("+ Swift Sneak").withStyle(ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("Maximum: II (4 matching trims)").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal("+ Sneaking Speed").withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("  2 pieces: " + signed(builtIns.wardSneakTwoPieces)).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal("  4 pieces: " + signed(builtIns.wardSneakFourPieces)).withStyle(ChatFormatting.GRAY));
             if (equippedPieces >= 2) {
-                int level = equippedPieces >= 4 ? 2 : 1;
-                tooltip.add(Component.literal("Active: " + roman(level) + " (" + matchingTrimText(equippedPieces) + ")")
+                tooltip.add(Component.literal("Active: " + signed(equippedPieces >= 4 ? builtIns.wardSneakFourPieces : builtIns.wardSneakTwoPieces) + " Sneaking Speed")
                         .withStyle(ChatFormatting.YELLOW));
             }
         }
@@ -117,31 +124,33 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
         switch (patternId) {
             case "minecraft:ward" -> {
                 if (cfg.wardDarknessImmunity) bonuses.add("Darkness Immunity");
-                if (cfg.wardAncientCitySpeed) bonuses.add("Speed I on Deepslate/Ancient City Blocks");
+                if (cfg.wardAncientCitySpeed) bonuses.add("Speed " + roman(cfg.wardSpeedLevel) + " on Deepslate/Ancient City Blocks");
             }
             case "minecraft:silence" -> {
                 if (cfg.silenceWardenNeutrality) bonuses.add("Warden Neutrality unless provoked");
-                if (cfg.silenceSculkSpeed) bonuses.add("Speed I on Sculk Blocks");
-                if (cfg.silenceSpectralMark) bonuses.add("Damaged Mobs Glow (10s)");
+                if (cfg.silenceSculkSpeed) bonuses.add("Speed " + roman(cfg.silenceSpeedLevel) + " on Sculk Blocks");
+                if (cfg.silenceSpectralMark) bonuses.add("Damaged Mobs Glow (" + number(cfg.silenceMarkTicks / 20.0) + "s)");
             }
-            case "minecraft:tide" -> { if (cfg.tideDolphinsGrace) bonuses.add("Dolphin's Grace"); }
-            case "minecraft:bolt" -> { if (cfg.boltProjectileDeflection) bonuses.add("25% Arrow Deflection"); }
-            case "minecraft:coast" -> { if (cfg.coastConduitPower) bonuses.add("Conduit Power"); }
+            case "minecraft:tide" -> { if (cfg.tideDolphinsGrace) bonuses.add("Dolphin's Grace " + roman(cfg.tideGraceLevel)); }
+            case "minecraft:bolt" -> { if (cfg.boltProjectileDeflection) bonuses.add(number(cfg.boltProjectileDeflectionChance * 100) + "% Arrow Deflection"); }
+            case "minecraft:coast" -> { if (cfg.coastConduitPower) bonuses.add("Conduit Power " + roman(cfg.coastConduitLevel)); }
             case "minecraft:sentry" -> { if (cfg.sentryIllagerNeutrality) bonuses.add("Illager Neutrality (outside raids)"); }
             case "minecraft:vex" -> { if (cfg.vexNeutrality) bonuses.add("Vex Neutrality unless provoked"); }
-            case "minecraft:dune" -> { if (cfg.duneTerrainSpeed) bonuses.add("Speed II on Dune Terrain"); }
-            case "minecraft:wild" -> { if (cfg.wildTerrainSpeed) bonuses.add("Speed II on Wild Terrain"); }
+            case "minecraft:dune" -> { if (cfg.duneTerrainSpeed) bonuses.add("Speed " + roman(cfg.duneSpeedLevel) + " on Dune Terrain"); }
+            case "minecraft:wild" -> { if (cfg.wildTerrainSpeed) bonuses.add("Speed " + roman(cfg.wildSpeedLevel) + " on Wild Terrain"); }
             case "minecraft:eye" -> {
-                if (cfg.eyeTerrainSpeed) bonuses.add("Speed II on Stronghold/End Terrain");
+                if (cfg.eyeTerrainSpeed) bonuses.add("Speed " + roman(cfg.eyeSpeedLevel) + " on Stronghold/End Terrain");
                 if (cfg.eyeEndermanGazeImmunity) bonuses.add("Enderman Gaze Immunity");
             }
             case "minecraft:snout" -> { if (cfg.snoutBruteHoglinNeutrality) bonuses.add("Piglin Brute & Hoglin Neutrality unless provoked"); }
             case "minecraft:rib" -> { if (cfg.ribWitherImmunity) bonuses.add("Wither Effect Immunity"); }
             default -> { }
         }
+        if (cfg.extraBonuses != null && cfg.extraBonuses.get(patternId) != null)
+            for (var rule : cfg.extraBonuses.get(patternId)) if (rule != null && rule.enabled) bonuses.add(ruleDescription(rule));
         if (bonuses.isEmpty()) return;
         tooltip.add(Component.literal(bonuses.size() == 1 ? "Full Set Bonus:" : "Full Set Bonuses:").withStyle(ChatFormatting.AQUA));
-        for (String bonus : bonuses) tooltip.add(Component.literal("+ " + bonus).withStyle(ChatFormatting.AQUA));
+        for (String bonus : bonuses) tooltip.add(Component.literal(prefix(bonus)).withStyle(ChatFormatting.AQUA));
         if (active) {
             tooltip.add(Component.literal(bonuses.size() == 1 ? "Built-In Bonus: ACTIVE" : "Built-In Bonuses: ACTIVE")
                     .withStyle(ChatFormatting.GREEN));
@@ -156,28 +165,31 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
         String materialId = trim.material().unwrapKey().map(k -> k.identifier().toString()).orElse("");
         String bonus = null;
         int required = 4;
-        if ("minecraft:gold".equals(materialId) && cfg.goldPiglinNeutrality) bonus = "Piglin Neutrality";
-        else if (("minecraft:resin".equals(materialId) || "minecraft:amber".equals(materialId)) && cfg.amberSafeHoneyHarvest) bonus = "Safe Honey Harvest without Campfire";
-        else if ("minecraft:amethyst".equals(materialId) && cfg.amethystEnchantingBoost) bonus = "Enchanting Quality +1 Step";
+        if ("minecraft:gold".equals(materialId) && cfg.goldPiglinNeutrality) bonus = "Piglin Neutrality\nExcludes Piglin Brutes & Hoglins";
+        else if (("minecraft:resin".equals(materialId) || "minecraft:amber".equals(materialId)) && cfg.amberSafeHoneyHarvest) bonus = "Safe honey harvesting from\nBeehives & Bee Nests\nWithout requiring smoke";
+        else if ("minecraft:amethyst".equals(materialId) && cfg.amethystEnchantingBoost) bonus = "Primary enchantment: " + signed(cfg.amethystLevelIncrease) + " level" + (Math.abs(cfg.amethystLevelIncrease) == 1 ? "" : "s") + "\nTools, weapons & books";
         else if ("minecraft:quartz".equals(materialId) && cfg.quartzGhastNeutrality) bonus = "Ghast Neutrality unless provoked";
-        else if ("minecraft:copper".equals(materialId) && cfg.copperLightningResistance) bonus = "Attracts Lightning + 50% Lightning Damage Resistance";
-        else if ("minecraft:iron".equals(materialId) && cfg.ironKnockbackResistance) bonus = "+0.1 Knockback Resistance";
-        else if ("minecraft:redstone".equals(materialId) && cfg.redstoneMovementSpeed) bonus = "+2.5% Movement Speed";
-        else if ("minecraft:lapis".equals(materialId) && cfg.lapisExperienceBoost) bonus = "+5% Experience Gain";
-        else if ("minecraft:emerald".equals(materialId) && cfg.emeraldVillagerDiscount) bonus = "Villager Discount";
-        else if ("minecraft:diamond".equals(materialId) && cfg.diamondArmorToughness) bonus = "+1 Armor Toughness";
-        else if ("minecraft:netherite".equals(materialId) && cfg.netheriteFireproofPiece) { bonus = "This Armor Piece Cannot Burn in Lava"; required = 1; }
-        if (bonus == null) return;
+        else if ("minecraft:copper".equals(materialId) && cfg.copperLightningResistance) bonus = "Attracts Lightning\n" + signed(cfg.copperDamageResistancePercent) + "% Lightning Damage Resistance";
+        else if ("minecraft:iron".equals(materialId) && cfg.ironKnockbackResistance) bonus = signed(cfg.ironResistance) + " Knockback Resistance";
+        else if ("minecraft:redstone".equals(materialId) && cfg.redstoneMovementSpeed) bonus = number(cfg.redstoneSpeedPercent) + "% Movement Speed";
+        else if ("minecraft:lapis".equals(materialId) && cfg.lapisExperienceBoost) bonus = number(cfg.lapisExperiencePercent) + "% Experience Gain";
+        else if ("minecraft:emerald".equals(materialId) && cfg.emeraldVillagerDiscount) bonus = "Villager Discount (" + signed(cfg.emeraldReputation) + " reputation)";
+        else if ("minecraft:diamond".equals(materialId) && cfg.diamondArmorToughness) bonus = signed(cfg.diamondToughness) + " Armor Toughness";
+        else if ("minecraft:netherite".equals(materialId) && cfg.netheriteFireproofPiece) { bonus = "Lava-proof armor piece"; required = 1; }
+        var extras = cfg.extraBonuses == null ? null : cfg.extraBonuses.get(materialId);
+        if (bonus == null && (extras == null || extras.stream().noneMatch(r -> r != null && r.enabled))) return;
 
         tooltip.add(Component.literal("Material Bonus:").withStyle(ChatFormatting.LIGHT_PURPLE));
-        tooltip.add(Component.literal("+ " + bonus).withStyle(ChatFormatting.LIGHT_PURPLE));
-        if (required == 1) {
+        if (bonus != null) tooltip.add(Component.literal(prefix(bonus)).withStyle(ChatFormatting.LIGHT_PURPLE));
+        if (extras != null) for (var rule : extras) if (rule != null && rule.enabled)
+            tooltip.add(Component.literal(prefix(ruleDescription(rule))).withStyle(ChatFormatting.LIGHT_PURPLE));
+        if (required == 1 && (extras == null || extras.stream().noneMatch(r -> r != null && r.enabled))) {
             tooltip.add(Component.literal("Material Bonus: ACTIVE").withStyle(ChatFormatting.GREEN));
             return;
         }
         Player player = Minecraft.getInstance().player;
         int count = player == null ? 0 : countEquippedMatchingMaterial(player, materialId);
-        if (count >= required) tooltip.add(Component.literal("Material Bonus: ACTIVE").withStyle(ChatFormatting.GREEN));
+        if (count >= 4) tooltip.add(Component.literal("Material Bonus: ACTIVE").withStyle(ChatFormatting.GREEN));
         else tooltip.add(Component.literal("Requires: 4 matching material trims").withStyle(ChatFormatting.GRAY));
     }
 
@@ -220,6 +232,22 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
             if (trim != null && trim.pattern().value().assetId().toString().equals(patternId)) count++;
         }
         return count;
+    }
+
+    private static String number(double value) {
+        return java.math.BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
+    }
+    private static String signed(double value) { return (value >= 0 ? "+" : "") + number(value); }
+    private static String prefix(String text) { return text.startsWith("+") || text.startsWith("-") ? text : "+ " + text; }
+    private static String ruleDescription(com.faefluffkrist.trimworks.config.BonusRule rule) {
+        if ("effect".equals(rule.type)) return effectName(rule.id).getString() + " " + roman((int)rule.amount);
+        String name = rule.id;
+        var id = Identifier.tryParse(rule.id);
+        if (id != null) {
+            var holder = BuiltInRegistries.ATTRIBUTE.get(id);
+            if (holder.isPresent()) name = Component.translatable(holder.get().value().getDescriptionId()).getString();
+        }
+        return signed(rule.amount) + (rule.percent ? "% " : " ") + name;
     }
 
     private static String roman(int level) {

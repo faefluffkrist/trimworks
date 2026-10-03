@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.material.gold_barters.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.material.gold_barters.description"
+    },
+    "icon": {
+      "id": "minecraft:gold_ingot"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:materials",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -17,10 +17,10 @@ public abstract class AbstractArrowMixin {
     private void trimeffects$deflectBoltArrow(EntityHitResult hit, CallbackInfo ci) {
         if (!BuiltInTrimBonuses.enabled()) return;
         AbstractArrow arrow = (AbstractArrow) (Object) this;
-        if (arrow.getOwner() instanceof ServerPlayer attacker && hit.getEntity() instanceof net.minecraft.world.entity.Mob) {
+        if (arrow.getOwner() instanceof net.minecraft.world.entity.LivingEntity attacker && hit.getEntity() instanceof net.minecraft.world.entity.Mob) {
             BuiltInTrimBonuses.applyWardSpectralMark(attacker, hit.getEntity());
         }
-        if (!(hit.getEntity() instanceof ServerPlayer player)) return;
+        if (!(hit.getEntity() instanceof net.minecraft.world.entity.LivingEntity player)) return;
         BuiltInBonusesConfig cfg = BuiltInTrimBonuses.config();
         if (!cfg.boltProjectileDeflection || !BuiltInTrimBonuses.fullSet(player, "minecraft:bolt")) return;
         if (player.getRandom().nextDouble() >= Math.max(0.0D, Math.min(1.0D, cfg.boltProjectileDeflectionChance))) return;

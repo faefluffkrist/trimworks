@@ -15,9 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerAttackMixin {
     @Inject(method = "attack", at = @At("TAIL"))
     private void trimeffects$afterAttack(Entity target, CallbackInfo ci) {
-        if (!((Object) this instanceof ServerPlayer player) || !BuiltInTrimBonuses.enabled()) return;
+        if (!((Object) this instanceof ServerPlayer player)) return;
 
         BuiltInTrimBonuses.markProvoked(target, player);
+        if (!BuiltInTrimBonuses.enabled()) return;
         BuiltInTrimBonuses.applyWardSpectralMark(player, target);
         BuiltInBonusesConfig cfg = BuiltInTrimBonuses.config();
         int boltPieces = BuiltInTrimBonuses.pieces(player, "minecraft:bolt");
@@ -26,6 +27,6 @@ public abstract class PlayerAttackMixin {
 
         double x = player.getX() - living.getX();
         double z = player.getZ() - living.getZ();
-        living.knockback(0.45D * boltLevel, x, z, player.damageSources().playerAttack(player), 0.0F, false);
+        living.knockback(boltPieces >= 4 ? cfg.boltKnockbackFourPieces : cfg.boltKnockbackTwoPieces, x, z, player.damageSources().playerAttack(player), 0.0F, false);
     }
 }

@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.spire_shulkers.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.spire_shulkers.description"
+    },
+    "icon": {
+      "id": "minecraft:shulker_shell"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/spire"
+}

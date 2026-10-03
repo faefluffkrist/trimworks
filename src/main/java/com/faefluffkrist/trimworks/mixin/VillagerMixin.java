@@ -17,7 +17,7 @@ public abstract class VillagerMixin {
             var cfg = MaterialTrimBonuses.config();
             if (cfg.enabled && cfg.emeraldVillagerDiscount && MaterialTrimBonuses.hasAtLeast(serverPlayer, "minecraft:emerald", 4)) {
                 // Equivalent to one MAJOR_POSITIVE curing-style reputation event: 20 value * weight 5 = +100 reputation.
-                cir.setReturnValue(cir.getReturnValue() + 100);
+                cir.setReturnValue(cir.getReturnValue() + cfg.emeraldReputation);
             }
         }
     }

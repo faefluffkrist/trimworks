@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.pattern.sentry_raid.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.pattern.sentry_raid.description"
+    },
+    "icon": {
+      "id": "minecraft:shield"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:sets/sentry"
+}

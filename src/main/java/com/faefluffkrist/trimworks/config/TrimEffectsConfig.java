@@ -4,7 +4,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class TrimEffectsConfig {
-    public int configVersion = 9;
+    public int configVersion = 11;
+    public MobBonusesConfig mobBonuses = new MobBonusesConfig();
+    /** Runtime server detection supplied in the synchronization payload, not a user setting. */
+    public Boolean detectedNaturallyTrimmed;
     public BuiltInBonusesConfig builtInBonuses = new BuiltInBonusesConfig();
     public MaterialBonusesConfig materialBonuses = new MaterialBonusesConfig();
     public Map<String, TrimDefinition> trims = new LinkedHashMap<>();

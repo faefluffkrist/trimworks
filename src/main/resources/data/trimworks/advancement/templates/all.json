@@ -1,0 +1,130 @@
+{
+  "criteria": {
+    "bolt": {
+      "trigger": "minecraft:impossible"
+    },
+    "coast": {
+      "trigger": "minecraft:impossible"
+    },
+    "dune": {
+      "trigger": "minecraft:impossible"
+    },
+    "eye": {
+      "trigger": "minecraft:impossible"
+    },
+    "flow": {
+      "trigger": "minecraft:impossible"
+    },
+    "host": {
+      "trigger": "minecraft:impossible"
+    },
+    "raiser": {
+      "trigger": "minecraft:impossible"
+    },
+    "rib": {
+      "trigger": "minecraft:impossible"
+    },
+    "sentry": {
+      "trigger": "minecraft:impossible"
+    },
+    "shaper": {
+      "trigger": "minecraft:impossible"
+    },
+    "silence": {
+      "trigger": "minecraft:impossible"
+    },
+    "snout": {
+      "trigger": "minecraft:impossible"
+    },
+    "spire": {
+      "trigger": "minecraft:impossible"
+    },
+    "tide": {
+      "trigger": "minecraft:impossible"
+    },
+    "vex": {
+      "trigger": "minecraft:impossible"
+    },
+    "ward": {
+      "trigger": "minecraft:impossible"
+    },
+    "wayfinder": {
+      "trigger": "minecraft:impossible"
+    },
+    "wild": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.templates.all.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.templates.all.description"
+    },
+    "icon": {
+      "id": "minecraft:silence_armor_trim_smithing_template"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:templates/section",
+  "requirements": [
+    [
+      "bolt"
+    ],
+    [
+      "coast"
+    ],
+    [
+      "dune"
+    ],
+    [
+      "eye"
+    ],
+    [
+      "flow"
+    ],
+    [
+      "host"
+    ],
+    [
+      "raiser"
+    ],
+    [
+      "rib"
+    ],
+    [
+      "sentry"
+    ],
+    [
+      "shaper"
+    ],
+    [
+      "silence"
+    ],
+    [
+      "snout"
+    ],
+    [
+      "spire"
+    ],
+    [
+      "tide"
+    ],
+    [
+      "vex"
+    ],
+    [
+      "ward"
+    ],
+    [
+      "wayfinder"
+    ],
+    [
+      "wild"
+    ]
+  ]
+}

@@ -25,16 +25,21 @@ public final class TrimGameplay {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) apply(player);
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                apply(player);
+                com.faefluffkrist.trimworks.advancement.TrimAdvancements.tick(player);
+            }
             BuiltInTrimBonuses.tick(server);
         });
     }
 
-    private static void apply(ServerPlayer player) {
-        TrimEffectsConfigManager.ensureDiscoveredTrims(player.level().registryAccess());
+    public static void apply(net.minecraft.world.entity.LivingEntity player) {
+        if (player instanceof net.minecraft.world.entity.player.Player)
+            TrimEffectsConfigManager.ensureDiscoveredTrims(player.level().registryAccess());
         Map<String, Integer> equipped = countEquippedPatterns(player);
         for (Map.Entry<String, TrimDefinition> entry : TrimEffectsConfigManager.getServerConfig().trims.entrySet()) {
             TrimDefinition definition = entry.getValue();
+            if (!MobTrimCompatibility.allows(player, entry.getKey(), 0)) continue;
             if (definition == null || !definition.enabled || definition.effects == null) continue;
 
             int pieces = equipped.getOrDefault(entry.getKey(), 0);
@@ -50,12 +55,12 @@ public final class TrimGameplay {
                 var holder = BuiltInRegistries.MOB_EFFECT.get(id);
                 if (holder.isEmpty()) continue;
 
-                player.addEffect(new MobEffectInstance(holder.get(), 3, level - 1, false, false, true));
+                com.faefluffkrist.trimworks.advancement.TrimAdvancements.applyEffect(player, new MobEffectInstance(holder.get(), 3, level - 1, false, false, true));
             }
         }
     }
 
-    private static Map<String, Integer> countEquippedPatterns(ServerPlayer player) {
+    private static Map<String, Integer> countEquippedPatterns(net.minecraft.world.entity.LivingEntity player) {
         Map<String, Integer> counts = new HashMap<>();
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack stack = player.getItemBySlot(slot);

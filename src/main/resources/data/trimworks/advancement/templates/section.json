@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.templates.section.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.templates.section.description"
+    },
+    "icon": {
+      "id": "minecraft:bolt_armor_trim_smithing_template"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "parent": "trimworks:root"
+}

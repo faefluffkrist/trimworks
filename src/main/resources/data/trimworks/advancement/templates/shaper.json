@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "title": {
+      "translate": "advancements.trimworks.templates.shaper.title"
+    },
+    "description": {
+      "translate": "advancements.trimworks.templates.shaper.description"
+    },
+    "icon": {
+      "id": "minecraft:shaper_armor_trim_smithing_template"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "trimworks:templates/section",
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

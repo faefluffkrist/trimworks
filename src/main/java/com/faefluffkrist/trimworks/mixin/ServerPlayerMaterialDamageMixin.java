@@ -16,7 +16,7 @@ public abstract class ServerPlayerMaterialDamageMixin {
         ServerPlayer self = (ServerPlayer)(Object)this;
         var cfg = MaterialTrimBonuses.config();
         if (cfg.enabled && cfg.copperLightningResistance && source.is(DamageTypes.LIGHTNING_BOLT)
-                && MaterialTrimBonuses.hasAtLeast(self, "minecraft:copper", 4)) return amount * 0.5F;
+                && MaterialTrimBonuses.hasAtLeast(self, "minecraft:copper", 4)) return amount * (float)(1.0D - Math.min(100.0D, cfg.copperDamageResistancePercent) / 100.0D);
         return amount;
     }
 }
