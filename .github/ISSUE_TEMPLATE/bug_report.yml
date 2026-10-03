@@ -1,0 +1,125 @@
+name: Bug Report
+description: Report a problem with Trimworks
+title: "[Bug]: "
+labels:
+  - bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue with Trimworks.
+
+        Please provide as much information as possible. Logs, screenshots, and reproduction steps are especially helpful.
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Trimworks Version
+      placeholder: "Example: 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      placeholder: "Example: 26.2"
+    validations:
+      required: true
+
+  - type: input
+    id: fabric-loader
+    attributes:
+      label: Fabric Loader Version
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Singleplayer
+        - Multiplayer - Hosted/LAN
+        - Dedicated Server
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: What part of Trimworks is affected?
+      options:
+        - Armor Trim Effect
+        - Trim Material Effect
+        - Tooltip
+        - Configuration
+        - Mod Menu
+        - Client / Visual
+        - Multiplayer / Config Sync
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: trim
+    attributes:
+      label: Affected Trim or Material
+      description: If applicable, which armor trim, trim material, or combination is involved?
+      placeholder: "Example: Ward trim with Amethyst"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem as clearly as possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect Trimworks to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Equip...
+        2. Apply...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other Mods
+      description: List other installed mods that may be relevant, or attach your complete mod list.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or Crash Report
+      description: Attach your latest.log or crash report if relevant.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Add screenshots, videos, configuration details, or anything else that may help.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Before Submitting
+      options:
+        - label: I have checked that I am using a supported version of Trimworks.
+          required: true
+        - label: I have searched existing issues to make sure this has not already been reported.
+          required: true

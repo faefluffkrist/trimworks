@@ -1,0 +1,74 @@
+name: Mod Compatibility Issue
+description: Report a conflict between Trimworks and another mod
+title: "[Compatibility]: "
+labels:
+  - compatibility
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when Trimworks works normally on its own but behaves incorrectly when another mod is installed.
+
+  - type: input
+    id: humbled-version
+    attributes:
+      label: Trimworks Version
+      placeholder: "Example: 0.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      placeholder: "Example: 26.2"
+    validations:
+      required: true
+
+  - type: input
+    id: conflicting-mod
+    attributes:
+      label: Conflicting Mod
+      description: Which mod appears to conflict with Trimworks?
+      placeholder: Mod name and version
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What Happens?
+      description: Describe the behavior when both mods are installed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: without-mod
+    attributes:
+      label: Behavior Without the Other Mod
+      description: What happens when the suspected conflicting mod is removed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Install Trimworks
+        2. Install ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Attach your latest.log or crash report if relevant.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Include screenshots, configuration files, mod lists, or other useful information.
