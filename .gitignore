@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+
+# Minecraft development/runtime
+run/
+logs/
+crash-reports/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Java
+*.class
+hs_err_pid*
