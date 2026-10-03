@@ -34,5 +34,6 @@
   ],
   "breaks": {
     "mr_trimeffects": "*"
-  }
+  },
+  "accessWidener": "trimworks.accesswidener"
 }

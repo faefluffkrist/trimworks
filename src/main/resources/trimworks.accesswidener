@@ -1,0 +1,6 @@
+accessWidener v2 official
+
+# Naturally Trimmed 3.6.1 uses this class during trim validation, but its
+# active access widener omits the permission shipped in its 26.1 variant.
+# Supply the permission from Trimworks without modifying Naturally Trimmed.
+accessible class net/minecraft/client/renderer/entity/layers/EquipmentLayerRenderer$TrimSpriteKey
