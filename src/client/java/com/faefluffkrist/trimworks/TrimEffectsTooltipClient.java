@@ -134,7 +134,7 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
             case "minecraft:tide" -> { if (cfg.tideDolphinsGrace) bonuses.add("Dolphin's Grace " + roman(cfg.tideGraceLevel)); }
             case "minecraft:bolt" -> { if (cfg.boltProjectileDeflection) bonuses.add(number(cfg.boltProjectileDeflectionChance * 100) + "% Arrow Deflection"); }
             case "minecraft:coast" -> { if (cfg.coastConduitPower) bonuses.add("Conduit Power " + roman(cfg.coastConduitLevel)); }
-            case "minecraft:sentry" -> { if (cfg.sentryIllagerNeutrality) bonuses.add("Illager Neutrality (outside raids)"); }
+            case "minecraft:sentry" -> { if (cfg.sentryIllagerNeutrality) { bonuses.add("Illager & Ravager Neutrality (outside raids)"); bonuses.add(cfg.sentryTheftProvocation ? "Lost if provoked or stealing nearby" : "Lost if provoked"); bonuses.add("Evokers & Vexes cannot be fooled"); } }
             case "minecraft:vex" -> { if (cfg.vexNeutrality) bonuses.add("Vex Neutrality unless provoked"); }
             case "minecraft:dune" -> { if (cfg.duneTerrainSpeed) bonuses.add("Speed " + roman(cfg.duneSpeedLevel) + " on Dune Terrain"); }
             case "minecraft:wild" -> { if (cfg.wildTerrainSpeed) bonuses.add("Speed " + roman(cfg.wildSpeedLevel) + " on Wild Terrain"); }
@@ -173,7 +173,8 @@ public class TrimEffectsTooltipClient implements ClientModInitializer {
         else if ("minecraft:iron".equals(materialId) && cfg.ironKnockbackResistance) bonus = signed(cfg.ironResistance) + " Knockback Resistance";
         else if ("minecraft:redstone".equals(materialId) && cfg.redstoneMovementSpeed) bonus = number(cfg.redstoneSpeedPercent) + "% Movement Speed";
         else if ("minecraft:lapis".equals(materialId) && cfg.lapisExperienceBoost) bonus = number(cfg.lapisExperiencePercent) + "% Experience Gain";
-        else if ("minecraft:emerald".equals(materialId) && cfg.emeraldVillagerDiscount) bonus = "Villager Discount (" + signed(cfg.emeraldReputation) + " reputation)";
+        else if ("minecraft:emerald".equals(materialId) && cfg.emeraldVillagerDiscount) bonus = "Villager Discount (" + signed(cfg.emeraldReputation) + " reputation)"
+                + (cfg.emeraldReputation > 0 ? "\nOffsets villager anger while wearing a full set" : "");
         else if ("minecraft:diamond".equals(materialId) && cfg.diamondArmorToughness) bonus = signed(cfg.diamondToughness) + " Armor Toughness";
         else if ("minecraft:netherite".equals(materialId) && cfg.netheriteFireproofPiece) { bonus = "Lava-proof armor piece"; required = 1; }
         var extras = cfg.extraBonuses == null ? null : cfg.extraBonuses.get(materialId);

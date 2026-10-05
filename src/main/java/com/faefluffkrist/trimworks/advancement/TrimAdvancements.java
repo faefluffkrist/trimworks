@@ -312,6 +312,8 @@ public final class TrimAdvancements {
             var instance=victim.getAttribute(holder.get());
             if(instance!=null&&instance.getModifiers().stream().anyMatch(m->m.id().getNamespace().equals("trimworks")&&m.amount()!=0))active=true;
         }
-        if(active){award(player,"naturally_trimmed/root");award(player,"naturally_trimmed/slay_empowered");}
+        if(active && !com.faefluffkrist.trimworks.gameplay.SentryTheftReports.isTheftBuffed(victim)) {
+            award(player,"naturally_trimmed/root");award(player,"naturally_trimmed/slay_empowered");
+        }
     }
 }

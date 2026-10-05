@@ -19,7 +19,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.Ghast;
-import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.piglin.PiglinBrute;
 import net.minecraft.world.entity.monster.illager.AbstractIllager;
@@ -77,6 +76,7 @@ public final class BuiltInTrimBonuses {
                 if (sneak != null) sneak.removeModifier(WARD_SWIFT_SNEAK_ID);
             }
         }
+        SentryEncounters.tickWarnings(server);
         BuiltInBonusesConfig cfg = config();
 
         if (enabled()) for (ServerPlayer player : server.getPlayerList().getPlayers()) applyWearer(player);
@@ -96,15 +96,13 @@ public final class BuiltInTrimBonuses {
                     applyWearer(mob);
                     if (activeWearer) TRACKED_MOBS.add(mob);
                 }
+                SentryEncounters.tickMob(mob);
                 LivingEntity player = mob.getTarget();
                 if (player == null) continue;
                 if (isProvoked(entity, player)) continue;
 
                 var materialCfg = MaterialTrimBonuses.config();
-                if (materialCfg.enabled && materialCfg.goldPiglinNeutrality && entity instanceof Piglin
-                        && MaterialTrimBonuses.hasAtLeast(player, "minecraft:gold", 4)) {
-                    mob.setTarget(null);
-                } else if (materialCfg.enabled && materialCfg.quartzGhastNeutrality && entity instanceof Ghast
+                if (materialCfg.enabled && materialCfg.quartzGhastNeutrality && entity instanceof Ghast
                         && MaterialTrimBonuses.hasAtLeast(player, "minecraft:quartz", 4)) {
                     mob.setTarget(null);
                 } else if (cfg.enabled && cfg.silenceWardenNeutrality && entity instanceof Warden warden && fullSet(player, "minecraft:silence")) {
@@ -112,14 +110,50 @@ public final class BuiltInTrimBonuses {
                     warden.setTarget(null);
                 } else if (cfg.enabled && cfg.vexNeutrality && entity instanceof Vex && fullSet(player, "minecraft:vex")) {
                     mob.setTarget(null);
-                } else if (cfg.enabled && cfg.sentryIllagerNeutrality && entity instanceof AbstractIllager && fullSet(player, "minecraft:sentry")) {
-                    if (!(entity instanceof Raider raider) || !raider.hasActiveRaid()) mob.setTarget(null);
+                } else if (shouldIgnoreSentry(mob, player)) {
+                    mob.setTarget(null);
                 } else if (cfg.enabled && cfg.snoutBruteHoglinNeutrality && fullSet(player, "minecraft:snout")
                         && (entity instanceof PiglinBrute || entity instanceof Hoglin)) {
                     mob.setTarget(null);
                 }
             }
         }
+    }
+
+    /** Shared by immediate target assignment and the tick fallback for existing targets. */
+    public static boolean shouldIgnoreSentry(Mob mob, LivingEntity wearer) {
+        BuiltInBonusesConfig cfg = config();
+        if (cfg == null || !cfg.enabled || !cfg.sentryIllagerNeutrality
+                || !fullSet(wearer, "minecraft:sentry") || isProvoked(mob, wearer)) return false;
+        // Spellcasters see through Sentry. Vex neutrality belongs only to the Vex trim.
+        String id = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
+        if (mob instanceof net.minecraft.world.entity.monster.illager.Evoker
+                || mob instanceof Vex || id.endsWith(":evoker") || id.endsWith(":vex")) return false;
+        if (mob instanceof Raider raider && raider.hasActiveRaid()) return false;
+        if (wearer.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            var raid = level.getRaidAt(wearer.blockPosition());
+            if (raid != null && raid.isActive() && !raid.isStopped()) return false;
+        }
+        return isSentryIllager(mob);
+    }
+
+    public static boolean isSentryIllager(Mob mob) {
+        BuiltInBonusesConfig cfg = config();
+        String id = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
+        if (mob instanceof net.minecraft.world.entity.monster.illager.Evoker || mob instanceof Vex
+                || id.endsWith(":evoker") || id.endsWith(":vex")) return false;
+        if (id.startsWith("friendsandfoes:")) {
+            return cfg.sentryFriendsAndFoesNeutrality
+                    && net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("friendsandfoes")
+                    && (id.equals("friendsandfoes:iceologer") || id.equals("friendsandfoes:illusioner"));
+        }
+        if (id.startsWith("takesapillage:")) {
+            return cfg.sentryTakesAPillageNeutrality
+                    && net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("takesapillage")
+                    && (id.equals("takesapillage:archer") || id.equals("takesapillage:legioner")
+                        || id.equals("takesapillage:skirmisher"));
+        }
+        return mob instanceof AbstractIllager || id.equals("minecraft:ravager");
     }
 
     public static void applyWearer(LivingEntity player) {

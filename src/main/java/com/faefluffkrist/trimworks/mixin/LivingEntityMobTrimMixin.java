@@ -32,7 +32,12 @@ public abstract class LivingEntityMobTrimMixin {
     @Inject(method = "hurtServer", at = @At("RETURN"))
     private void trimworks$mobAttackBonuses(ServerLevel level, DamageSource source, float amount,
                                            CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValue() || !MobTrimCompatibility.installed()) return;
+        if (!cir.getReturnValue()) return;
+        // Successful player-attributed damage includes arrows, tridents and thrown potions.
+        if (source.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            com.faefluffkrist.trimworks.gameplay.SentryEncounters.attacked(level, (LivingEntity)(Object)this, player);
+        }
+        if (!MobTrimCompatibility.installed()) return;
         LivingEntity target = (LivingEntity)(Object)this;
         // Damage-source attribution covers vanilla and modded mobs without overriding their AI.
         if (!(source.getEntity() instanceof Mob attacker)) return;

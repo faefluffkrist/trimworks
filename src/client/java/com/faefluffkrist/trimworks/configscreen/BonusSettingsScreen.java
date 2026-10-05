@@ -26,9 +26,17 @@ final class BonusSettingsScreen extends ScrollingConfigScreen {
         config = material ? root.materialBonuses : root.builtInBonuses;
         String path = id.substring(id.indexOf(':') + 1);
         String prefix = path.equals("resin") ? "amber" : path;
-        fields = Arrays.stream(config.getClass().getFields()).filter(f -> id.startsWith("minecraft:") && f.getName().startsWith(prefix) && !f.getName().equals("extraBonuses")).toList();
+        fields = Arrays.stream(config.getClass().getFields()).filter(f -> id.startsWith("minecraft:") && f.getName().startsWith(prefix) && !f.getName().equals("extraBonuses") && sentryOptionAvailable(f.getName())).toList();
         try { for (Field f : fields) values.put(f, f.getName().endsWith("Chance") ? Double.toString(f.getDouble(config) * 100.0D) : String.valueOf(f.get(config))); }
         catch (IllegalAccessException e) { throw new IllegalStateException(e); }
+    }
+    private static boolean sentryOptionAvailable(String name) {
+        var loader = net.fabricmc.loader.api.FabricLoader.getInstance();
+        return switch (name) {
+            case "sentryFriendsAndFoesNeutrality" -> loader.isModLoaded("friendsandfoes");
+            case "sentryTakesAPillageNeutrality" -> loader.isModLoaded("takesapillage");
+            default -> true;
+        };
     }
     private boolean readOnly() { return TrimEffectsConfigManager.hasServerSync() && !net.minecraft.client.Minecraft.getInstance().hasSingleplayerServer(); }
     private void capture() { inputs.forEach((f, box) -> values.put(f, box.getValue())); }

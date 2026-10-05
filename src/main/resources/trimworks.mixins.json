@@ -30,7 +30,11 @@
     "TripwireAdvancementMixin",
     "StructureLootAdvancementMixin",
     "DragonAdvancementMixin",
-    "TrimAdvancementVisibilityMixin"
+    "TrimAdvancementVisibilityMixin",
+    "SentryTargetMixin",
+    "SentryContainerMixin",
+    "MobGoalSelectorAccessor",
+    "EntityGlowingAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

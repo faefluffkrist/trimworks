@@ -12,5 +12,7 @@ public final class TrimEffectsExtension implements ModInitializer {
         TrimConfigSync.registerCommon();
         com.faefluffkrist.trimworks.advancement.TrimAdvancements.register();
         TrimGameplay.register();
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(
+                server -> com.faefluffkrist.trimworks.gameplay.SentryEncounters.clear());
     }
 }

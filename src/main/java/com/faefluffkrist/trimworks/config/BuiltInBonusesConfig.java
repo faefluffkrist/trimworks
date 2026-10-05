@@ -14,6 +14,13 @@ public final class BuiltInBonusesConfig {
     public double boltProjectileDeflectionChance = 0.25D;
     public boolean coastConduitPower = true;
     public boolean sentryIllagerNeutrality = true;
+    public boolean sentryTheftProvocation = true;
+    public boolean sentryTheftWarning = true;
+    public boolean sentryTheftSnitching = true;
+    public boolean sentryGroupRetaliation = true;
+    public boolean sentryEvokerWarning = true;
+    public boolean sentryFriendsAndFoesNeutrality = true;
+    public boolean sentryTakesAPillageNeutrality = true;
     public boolean vexNeutrality = true;
     public boolean duneTerrainSpeed = true;
     public boolean wildTerrainSpeed = true;

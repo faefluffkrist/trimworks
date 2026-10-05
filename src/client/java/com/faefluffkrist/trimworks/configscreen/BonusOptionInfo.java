@@ -24,7 +24,14 @@ final class BonusOptionInfo {
             case "coastConduitLevel" -> new Info("Conduit Power level", "Usually level I; higher levels are allowed but may not scale.");
             case "tideDolphinsGrace" -> new Info("Dolphin’s Grace", "Grants Dolphin’s Grace with four Tide patterns.");
             case "tideGraceLevel" -> new Info("Dolphin’s Grace level", "Usually level I; higher levels are allowed but may not scale.");
-            case "sentryIllagerNeutrality" -> new Info("Illager neutrality", "Illagers ignore the full set outside active raids, unless provoked.");
+            case "sentryIllagerNeutrality" -> new Info("Illager neutrality", "Illagers and ravagers ignore a full set unless provoked, stealing nearby, or in a raid. Evokers and vexes see through it.");
+            case "sentryTheftProvocation" -> new Info("Nearby theft provokes illagers", "Opening a chest or barrel within 8 blocks horizontally and 4 vertically angers watching illagers.");
+            case "sentryTheftWarning" -> new Info("Theft warning", "White action-bar warning for full Sentry wearers caught by one or two illagers. Five-minute cooldown.");
+            case "sentryTheftSnitching" -> new Info("Lone witness reports theft", "A lone pillager searches 60 blocks for two illagers, with time and stuck limits. Runner and recruits gain a small rush bonus and Resistance II.");
+            case "sentryGroupRetaliation" -> new Info("Illager group retaliation", "Attacks alert illagers within 15 horizontal and 6 vertical blocks of you. Theft witnesses do not spread anger.");
+            case "sentryEvokerWarning" -> new Info("Evoker warning", "Warn when an evoker targets a full Sentry wearer. Five-minute cooldown per player.");
+            case "sentryFriendsAndFoesNeutrality" -> new Info("Friends & Foes support", "Sentry neutrality also covers iceologers and illusioners. Requires Illager neutrality.");
+            case "sentryTakesAPillageNeutrality" -> new Info("It Takes a Pillage support", "Sentry neutrality also covers archers, legioners and skirmishers. Requires Illager neutrality.");
             case "vexNeutrality" -> new Info("Vex neutrality", "Vexes ignore the full set unless you provoke them.");
             case "duneTerrainSpeed" -> new Info("Dune terrain bonus", "Grants Speed on the configured dune terrain block tag.");
             case "duneSpeedLevel" -> new Info("Dune Speed level", "Status-effect level on dune terrain. Vanilla guide: II.");
